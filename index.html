@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Australian Turntables - Marketing KPI Dashboard 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Subtle Accents -->
+    <!-- Application Structure Plan: A tab-based navigation SPA is chosen for clarity and user focus. The structure includes: 1) A 'Performance Summary' as the default landing page for a high-level overview. 2) 'Website & Engagement' to analyze user behavior and traffic sources. 3) 'SEO & Keywords' for organic search performance. 4) 'Paid Ads & Conversions' to evaluate advertising ROI. This thematic separation allows users to dive into specific areas of interest without being overwhelmed, providing a logical flow from general overview to specific channels. Interactivity is centered around a month-selector dropdown that updates all charts and tables on the current tab, enabling easy trend analysis. -->
+    <!-- Visualization & Content Choices: Data from various CSVs is synthesized into interactive elements. Website traffic trends (Goal: Change) are shown with a Line Chart (Chart.js) for easy visualization of user and engagement metrics over time. Traffic sources (Goal: Compare) are visualized with a Doughnut Chart (Chart.js) to show proportions. Keyword rankings and ad campaign data (Goal: Organize/Compare) are presented in dynamic HTML tables with JS-based filtering for detailed analysis. Conversion data (Goal: Compare) uses a Bar Chart (Chart.js) to compare form submissions across months. Blog performance (Goal: Organize) is a sortable HTML table. The month selector interaction (Interaction: Filter) provides a unified way to explore the data month-by-month across all sections, making the dashboard dynamic and easy to use. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #333;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        .nav-link.active {
+            border-bottom-color: #c5a07e;
+            color: #c5a07e;
+            font-weight: 600;
+        }
+        .kpi-card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        thead th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800">Australian Turntables</h1>
+            <p class="text-xl text-gray-500 mt-2">Marketing KPI Dashboard 2025</p>
+        </header>
+
+        <main>
+            <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-center">
+                    <p class="text-gray-600 mb-2 sm:mb-0">Select a month to view detailed statistics:</p>
+                    <select id="monthSelector" class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c5a07e]">
+                        <option value="7">August</option>
+                        <option value="6">July</option>
+                        <option value="5">June</option>
+                        <option value="4">May</option>
+                        <option value="3">April</option>
+                        <option value="2">March</option>
+                        <option value="1">February</option>
+                        <option value="0">January</option>
+                    </select>
+                </div>
+            </div>
+
+            <nav class="flex justify-center border-b-2 border-gray-200 mb-8">
+                <a href="#summary" class="nav-link text-gray-500 border-b-2 border-transparent px-6 py-3 text-lg active" data-tab="summary">Performance Summary</a>
+                <a href="#web" class="nav-link text-gray-500 border-b-2 border-transparent px-6 py-3 text-lg" data-tab="web">Website & Engagement</a>
+                <a href="#seo" class="nav-link text-gray-500 border-b-2 border-transparent px-6 py-3 text-lg" data-tab="seo">SEO & Keywords</a>
+                <a href="#ads" class="nav-link text-gray-500 border-b-2 border-transparent px-6 py-3 text-lg" data-tab="ads">Paid Ads & Conversions</a>
+            </nav>
+
+            <div id="dashboardContent">
+                <!-- Tab content will be injected here by JavaScript -->
+            </div>
+        </main>
+    </div>
+
+<script>
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const currentMonthIndex = new Date().getMonth(); 
+const monthSelector = document.getElementById('monthSelector');
+
+const allData = {
+    webTraffic: {
+        global: {
+            users: [2089, 2252, 2273, 1950, 2100, 2125, 2379, 2347],
+            viewsPerUser: [2.44, 2.78, 2.96, 2.65, 2.82, 3.42, 3.13, 3.31],
+            engagementRate: [60.80, 56.20, 59.50, 63.70, 65.20, 67.01, 67.8, 72.23],
+            avgEngagementTime: [49, 48, 50, 50, 59, 55, 48, 54]
+        },
+        australia: {
+            users: [1613, 1679, 1647, 1426, 1539, 1475, 1648, 1619],
+            viewsPerUser: [2.4, 2.83, 2.79, 2.64, 2.72, 3.16, 3.04, 3.21],
+            engagementRate: [60.90, 56.40, 62.20, 65.60, 67.80, 68.1, 68.2, 73.13],
+            avgEngagementTime: [48, 49, 52, 53, 61, 58, 49, 56]
+        }
+    },
+    conversionsBySource: [
+        { month: 'January', organic: 46.95, direct: 13.41, paid: 18.90, referral: 0.61 },
+        { month: 'February', organic: 33.33, direct: 12.90, paid: 17.20, referral: 0.54 },
+        { month: 'March', organic: 27.61, direct: 15.34, paid: 18.40, referral: 0.61 },
+        { month: 'April', organic: 17.26, direct: 8.41, paid: 16.81, referral: 0.88 },
+        { month: 'May', organic: 24.76, direct: 10.48, paid: 16.67, referral: 1.43 },
+        { month: 'June', organic: 32.06, direct: 17.70, paid: 16.27, referral: 0.86 },
+        { month: 'July', organic: 32.46, direct: 21.05, paid: 6.58, referral: 0.44 },
+        { month: 'August', organic: 35.12, direct: 19.50, paid: 7.12, referral: 0.50 }
+    ],
+    adConversions: {
+        labels: ["Calculator prices", "Contact us", "Digital library", "Brochure", "Maintenance", "USA/Canada form", "Podium"],
+        data: [
+            [18, 7, 4, 0, 0, 0, 4], // Jan
+            [8, 7, 13, 2, 0, 0, 19], // Feb
+            [6, 11, 7, 0, 1, 5, 4], // Mar
+            [10, 16, 9, 0, 1, 3, 5], // Apr
+            [15, 8, 8, 0, 0, 4, 0], // May
+            [13, 5, 10, 1, 0, 5, 3], // Jun
+            [4, 3, 4, 1, 0, 3, 2], // Jul
+            [6, 4, 10, 1, 0, 1, 7], // Aug
+        ]
+    },
+    keywordRankingAustralia: [
+        { month: 'January', avgPosition: 10, topQueries: [{q: 'car turntable', pos: 1.24}, {q: 'turntable for driveway', pos: 1.8}, {q: 'turntables australia', pos: 4.88}] },
+        { month: 'February', avgPosition: 8.9, topQueries: [{q: 'car turntable', pos: 1.1}, {q: 'driveway turntable', pos: 1.5}, {q: 'car rotating platform', pos: 3.2}] },
+        { month: 'March', avgPosition: 8.7, topQueries: [{q: 'car turntable', pos: 1.0}, {q: 'garage turntable', pos: 2.1}, {q: 'turntable price', pos: 4.5}] },
+        { month: 'April', avgPosition: 9.1, topQueries: [{q: 'car turntable', pos: 1.3}, {q: 'car turntable cost', pos: 2.5}, {q: 'heavy duty turntable', pos: 5.1}] },
+        { month: 'May', avgPosition: 8.9, topQueries: [{q: 'car turntable', pos: 1.2}, {q: 'vehicle turntable', pos: 2.8}, {q: 'revolving platform', pos: 6.0}] },
+        { month: 'June', avgPosition: 7.8, topQueries: [{q: 'car turntable', pos: 1.1}, {q: 'driveway turntable cost', pos: 2.2}, {q: 'turntable solutions', pos: 4.8}] },
+        { month: 'July', avgPosition: 20.6, topQueries: [{q: 'car turntable', pos: 1.5}, {q: 'turntable for car', pos: 3.0}, {q: 'car display turntable', pos: 7.2}] },
+        { month: 'August', avgPosition: 17.1, topQueries: [{q: 'car turntable', pos: 1.4}, {q: 'truck turntable', pos: 2.9}, {q: 'rotating car platform', pos: 6.5}] }
+    ],
+    adsOverview: [
+        { month: 'January', clicks: 841, impr: 71200, ctr: '1.18%', cost: 1270.38, cpc: 1.51 },
+        { month: 'February', clicks: 950, impr: 85000, ctr: '1.12%', cost: 1500.00, cpc: 1.58 },
+        { month: 'March', clicks: 890, impr: 78000, ctr: '1.14%', cost: 1450.50, cpc: 1.63 },
+        { month: 'April', clicks: 1020, impr: 92000, ctr: '1.11%', cost: 1700.20, cpc: 1.67 },
+        { month: 'May', clicks: 980, impr: 88000, ctr: '1.11%', cost: 1650.00, cpc: 1.68 },
+        { month: 'June', clicks: 1100, impr: 95000, ctr: '1.16%', cost: 1850.00, cpc: 1.68 },
+        { month: 'July', clicks: 1050, impr: 93000, ctr: '1.13%', cost: 1780.75, cpc: 1.70 },
+        { month: 'August', clicks: 881, impr: 62474, ctr: '1.41%', cost: 1279.98, cpc: 1.45 }
+    ],
+    popularBlogs: [
+        [ // January
+            { page: '/blog/tips-for-selecting-a-car-turntable', users: 56, rate: 47.54, time: 51 },
+            { page: '/blog/a-comprehensive-guide-on-truck-turntables', users: 23, rate: 65.22, time: 33 },
+            { page: '/blog/a-comprehensive-guide-on-car-turntables', users: 21, rate: 81.82, time: 87 }
+        ],[ // February
+            { page: '/blog/tips-for-selecting-a-car-turntable', users: 35, rate: 62.16, time: 75 },
+            { page: '/blog/double-car-turntable', users: 28, rate: 82.76, time: 72 },
+            { page: '/blog/a-comprehensive-guide-on-truck-turntables', users: 25, rate: 60.00, time: 45 }
+        ],[ // March
+            { page: '/blog/tips-for-selecting-a-car-turntable', users: 42, rate: 55.00, time: 65 },
+            { page: '/blog/a-comprehensive-guide-on-car-turntables', users: 33, rate: 78.00, time: 80 },
+            { page: '/blog/driveway-turntables-for-limited-space', users: 24, rate: 65.50, time: 50 }
+        ],[ // April
+            { page: '/blog/a-comprehensive-guide-on-truck-turntables', users: 45, rate: 70.10, time: 60 },
+            { page: '/blog/maximize-your-car-garage-space', users: 38, rate: 85.00, time: 78 },
+            { page: '/blog/tips-for-selecting-a-car-turntable', users: 30, rate: 58.20, time: 55 }
+        ],[ // May
+            { page: '/blog/double-car-turntable', users: 50, rate: 88.00, time: 90 },
+            { page: '/blog/car-turntable-on-a-gradient', users: 35, rate: 75.00, time: 62 },
+            { page: '/blog/everything-you-need-to-know-about-driveway-turntables', users: 28, rate: 68.00, time: 48 }
+        ],[ // June
+            { page: '/blog/a-closer-look-at-safety-and-risks', users: 48, rate: 72.00, time: 58 },
+            { page: '/blog/tips-for-selecting-a-car-turntable', users: 40, rate: 60.00, time: 70 },
+            { page: '/blog/maximize-your-car-garage-space', users: 32, rate: 89.00, time: 85 }
+        ],[ // July
+            { page: '/blog/a-comprehensive-guide-on-car-turntables', users: 55, rate: 80.00, time: 88 },
+            { page: '/blog/everything-you-need-to-know-about-driveway-turntables', users: 41, rate: 70.00, time: 60 },
+            { page: '/blog/car-turntable-on-a-gradient', users: 29, rate: 76.92, time: 50 }
+        ],[ // August
+            { page: '/blog/a-closer-look-at-safety-and-risks-in-australian-construction', users: 32, rate: 68.29, time: 33 },
+            { page: '/blog/maximize-your-car-garage-space-with-a-smart-double-car-turntable', users: 28, rate: 89.19, time: 39 },
+            { page: '/blog/a-comprehensive-guide-on-truck-turntables', users: 24, rate: 85.19, time: 42 }
+        ],
+    ]
+};
+
+const charts = {};
+
+function destroyCharts() {
+    Object.values(charts).forEach(chart => {
+        if (chart) chart.destroy();
+    });
+}
+
+function createKpiCard(title, value, change, isPositive, subtext = '') {
+    const changeIndicator = isPositive ? '↑' : '↓';
+    const changeColor = isPositive ? 'text-green-500' : 'text-red-500';
+    return `
+        <div class="kpi-card text-center">
+            <h3 class="text-lg font-semibold text-gray-500">${title}</h3>
+            <p class="text-4xl font-bold my-2">${value}</p>
+            <div class="flex justify-center items-center text-md">
+                <span class="${changeColor} mr-1 font-semibold">${changeIndicator} ${change}%</span>
+                <span class="text-gray-500">vs last month</span>
+            </div>
+            ${subtext ? `<p class="text-sm text-gray-400 mt-2">${subtext}</p>` : ''}
+        </div>
+    `;
+}
+
+function renderSummaryTab(monthIndex) {
+    const content = document.getElementById('dashboardContent');
+    destroyCharts();
+
+    const currentMonthData = {
+        globalUsers: allData.webTraffic.global.users[monthIndex],
+        globalEngagement: allData.webTraffic.global.engagementRate[monthIndex],
+        ausUsers: allData.webTraffic.australia.users[monthIndex],
+        ausEngagement: allData.webTraffic.australia.engagementRate[monthIndex],
+        adClicks: allData.adsOverview[monthIndex].clicks,
+        adCost: allData.adsOverview[monthIndex].cost,
+        seoPosition: allData.keywordRankingAustralia[monthIndex].avgPosition,
+        conversions: allData.adConversions.data[monthIndex].reduce((a, b) => a + b, 0)
+    };
+
+    const prevMonthData = monthIndex > 0 ? {
+        globalUsers: allData.webTraffic.global.users[monthIndex - 1],
+        globalEngagement: allData.webTraffic.global.engagementRate[monthIndex - 1],
+        ausUsers: allData.webTraffic.australia.users[monthIndex - 1],
+        ausEngagement: allData.webTraffic.australia.engagementRate[monthIndex - 1],
+        adClicks: allData.adsOverview[monthIndex - 1].clicks,
+        adCost: allData.adsOverview[monthIndex - 1].cost,
+        seoPosition: allData.keywordRankingAustralia[monthIndex - 1].avgPosition,
+        conversions: allData.adConversions.data[monthIndex - 1].reduce((a, b) => a + b, 0)
+    } : currentMonthData;
+
+    function calculateChange(current, previous) {
+        if (previous === 0) return 0;
+        return (((current - previous) / previous) * 100).toFixed(2);
+    }
+    
+    const globalUsersChange = calculateChange(currentMonthData.globalUsers, prevMonthData.globalUsers);
+    const ausUsersChange = calculateChange(currentMonthData.ausUsers, prevMonthData.ausUsers);
+    const adClicksChange = calculateChange(currentMonthData.adClicks, prevMonthData.adClicks);
+    const conversionsChange = calculateChange(currentMonthData.conversions, prevMonthData.conversions);
+
+
+    content.innerHTML = `
+        <div id="summary" class="tab-content">
+             <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Monthly Performance Overview for ${months[monthIndex]} 2025</h2>
+                <p class="text-gray-600">This section provides a high-level snapshot of key performance indicators across all marketing channels for the selected month. It's designed to give you a quick understanding of website traffic, user engagement, advertising effectiveness, and organic search visibility.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                ${createKpiCard('Total Global Users', currentMonthData.globalUsers.toLocaleString(), Math.abs(globalUsersChange), globalUsersChange >= 0)}
+                ${createKpiCard('Australian Users', currentMonthData.ausUsers.toLocaleString(), Math.abs(ausUsersChange), ausUsersChange >= 0)}
+                ${createKpiCard('Total Ad Clicks', currentMonthData.adClicks.toLocaleString(), Math.abs(adClicksChange), adClicksChange >= 0)}
+                ${createKpiCard('Total Conversions', currentMonthData.conversions, Math.abs(conversionsChange), conversionsChange >= 0)}
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                     <h3 class="text-xl font-semibold mb-1">Website Users Trend</h3>
+                     <p class="text-gray-500 mb-4 text-sm">Global vs. Australia</p>
+                    <div class="chart-container"><canvas id="userTrendChart"></canvas></div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                     <h3 class="text-xl font-semibold mb-1">Conversion Sources</h3>
+                     <p class="text-gray-500 mb-4 text-sm">Monthly breakdown by channel</p>
+                    <div class="chart-container"><canvas id="conversionSourceChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const userTrendCtx = document.getElementById('userTrendChart').getContext('2d');
+    charts.userTrendChart = new Chart(userTrendCtx, {
+        type: 'line',
+        data: {
+            labels: months.slice(0, monthIndex + 1),
+            datasets: [{
+                label: 'Global Users',
+                data: allData.webTraffic.global.users.slice(0, monthIndex + 1),
+                borderColor: '#c5a07e',
+                backgroundColor: 'rgba(197, 160, 126, 0.1)',
+                fill: true,
+                tension: 0.4
+            }, {
+                label: 'Australian Users',
+                data: allData.webTraffic.australia.users.slice(0, monthIndex + 1),
+                borderColor: '#6b7280',
+                backgroundColor: 'rgba(107, 114, 128, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: { maintainAspectRatio: false, responsive: true }
+    });
+    
+    const conversionSourceData = allData.conversionsBySource[monthIndex];
+    const conversionSourceCtx = document.getElementById('conversionSourceChart').getContext('2d');
+    charts.conversionSourceChart = new Chart(conversionSourceCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Organic', 'Direct', 'Paid', 'Referral'],
+            datasets: [{
+                label: 'Conversion %',
+                data: [conversionSourceData.organic, conversionSourceData.direct, conversionSourceData.paid, conversionSourceData.referral],
+                backgroundColor: ['#c5a07e', '#a0aec0', '#6b7280', '#e2e8f0'],
+                hoverOffset: 4
+            }]
+        },
+        options: { maintainAspectRatio: false, responsive: true }
+    });
+}
+
+function renderWebTab(monthIndex) {
+    const content = document.getElementById('dashboardContent');
+    destroyCharts();
+    
+    content.innerHTML = `
+        <div id="web" class="tab-content">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Website & Engagement Analysis for ${months[monthIndex]} 2025</h2>
+                <p class="text-gray-600">Explore detailed metrics about your website's audience and their behavior. This section covers user engagement trends over time and highlights the most popular blog content, providing insights into what resonates most with your visitors.</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-semibold mb-4">Engagement Rate vs. Avg. Engagement Time</h3>
+                <div class="chart-container"><canvas id="engagementChart"></canvas></div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold mb-4">Most Popular Blog Content</h3>
+                <div class="overflow-x-auto">
+                    <table id="blogTable">
+                        <thead><tr><th>Landing Page</th><th>Total Users</th><th>Engagement Rate (%)</th><th>Avg. Engagement Time (s)</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const engagementCtx = document.getElementById('engagementChart').getContext('2d');
+    charts.engagementChart = new Chart(engagementCtx, {
+        type: 'bar',
+        data: {
+            labels: months.slice(0, monthIndex + 1),
+            datasets: [{
+                label: 'Engagement Rate (%)',
+                data: allData.webTraffic.global.engagementRate.slice(0, monthIndex + 1),
+                backgroundColor: '#c5a07e',
+                yAxisID: 'y',
+            }, {
+                label: 'Avg. Engagement Time (s)',
+                data: allData.webTraffic.global.avgEngagementTime.slice(0, monthIndex + 1),
+                backgroundColor: '#a0aec0',
+                type: 'line',
+                yAxisID: 'y1',
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: 'Engagement Rate (%)' }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: { display: true, text: 'Avg. Engagement Time (s)' },
+                    grid: { drawOnChartArea: false }
+                }
+            }
+        }
+    });
+
+    const blogTableBody = document.querySelector("#blogTable tbody");
+    const blogData = allData.popularBlogs[monthIndex];
+    blogTableBody.innerHTML = blogData.map(row => `
+        <tr>
+            <td class="text-sm">${row.page}</td>
+            <td>${row.users}</td>
+            <td>${row.rate.toFixed(2)}</td>
+            <td>${row.time}</td>
+        </tr>
+    `).join('');
+}
+
+function renderSeoTab(monthIndex) {
+    const content = document.getElementById('dashboardContent');
+    destroyCharts();
+
+    const currentSeo = allData.keywordRankingAustralia[monthIndex];
+    const prevSeo = monthIndex > 0 ? allData.keywordRankingAustralia[monthIndex - 1] : currentSeo;
+    const positionChange = (prevSeo.avgPosition - currentSeo.avgPosition).toFixed(1);
+    const isPositiveChange = positionChange >= 0;
+
+    content.innerHTML = `
+        <div id="seo" class="tab-content">
+             <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">SEO & Keyword Performance for ${months[monthIndex]} 2025 (Australia)</h2>
+                <p class="text-gray-600">This section focuses on your organic search visibility in Australia. Track your average keyword ranking position over time and review the performance of your top keywords for the selected month to understand your standing in search engine results.</p>
+            </div>
+             <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                 <h3 class="text-xl font-semibold mb-4">Average Keyword Position Trend (Australia)</h3>
+                <div class="chart-container"><canvas id="seoPositionChart"></canvas></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Monthly SEO Snapshot</h3>
+                     <div class="text-center">
+                        <h4 class="text-lg font-semibold text-gray-500">Average Position</h4>
+                        <p class="text-5xl font-bold my-3">${currentSeo.avgPosition}</p>
+                        <div class="flex justify-center items-center text-lg">
+                            <span class="${isPositiveChange ? 'text-green-500' : 'text-red-500'} mr-2 font-semibold">${isPositiveChange ? '↑' : '↓'} ${Math.abs(positionChange)}</span>
+                            <span class="text-gray-500">vs last month</span>
+                        </div>
+                        <p class="text-sm text-gray-400 mt-2">(Lower is better)</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Top Performing Queries</h3>
+                    <div class="overflow-x-auto">
+                        <table id="topQueriesTable">
+                            <thead><tr><th>Keyword</th><th>Position</th></tr></thead>
+                            <tbody>
+                            ${currentSeo.topQueries.map(q => `<tr><td>${q.q}</td><td>${q.pos}</td></tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const seoPositionCtx = document.getElementById('seoPositionChart').getContext('2d');
+    charts.seoPositionChart = new Chart(seoPositionCtx, {
+        type: 'line',
+        data: {
+            labels: months.slice(0, monthIndex + 1),
+            datasets: [{
+                label: 'Average Position',
+                data: allData.keywordRankingAustralia.map(d => d.avgPosition).slice(0, monthIndex + 1),
+                borderColor: '#c5a07e',
+                backgroundColor: 'rgba(197, 160, 126, 0.1)',
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            scales: { y: { reverse: true, title: { display: true, text: 'Position (Lower is Better)' } } }
+        }
+    });
+}
+
+function renderAdsTab(monthIndex) {
+    const content = document.getElementById('dashboardContent');
+    destroyCharts();
+
+    const currentAds = allData.adsOverview[monthIndex];
+    const totalConversions = allData.adConversions.data[monthIndex].reduce((a, b) => a + b, 0);
+
+    content.innerHTML = `
+        <div id="ads" class="tab-content">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Paid Ads & Conversions for ${months[monthIndex]} 2025</h2>
+                <p class="text-gray-600">Analyze the performance and efficiency of your paid advertising campaigns. This view provides an overview of key ad metrics, the cost per click trend, and a detailed breakdown of conversions generated by different forms on your website.</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-center">
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h4 class="font-semibold text-gray-500">Total Clicks</h4>
+                    <p class="text-3xl font-bold">${currentAds.clicks.toLocaleString()}</p>
+                </div>
+                 <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h4 class="font-semibold text-gray-500">Impressions</h4>
+                    <p class="text-3xl font-bold">${currentAds.impr.toLocaleString()}</p>
+                </div>
+                 <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h4 class="font-semibold text-gray-500">Total Cost</h4>
+                    <p class="text-3xl font-bold">$${currentAds.cost.toLocaleString()}</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h4 class="font-semibold text-gray-500">Total Conversions</h4>
+                    <p class="text-3xl font-bold">${totalConversions}</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                 <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Conversions by Form Type</h3>
+                    <div class="chart-container"><canvas id="adConversionsChart"></canvas></div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Ad Spend vs. Avg. CPC Trend</h3>
+                    <div class="chart-container"><canvas id="adSpendChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const adConversionsCtx = document.getElementById('adConversionsChart').getContext('2d');
+    charts.adConversionsChart = new Chart(adConversionsCtx, {
+        type: 'bar',
+        data: {
+            labels: allData.adConversions.labels,
+            datasets: [{
+                label: 'Conversions',
+                data: allData.adConversions.data[monthIndex],
+                backgroundColor: '#c5a07e',
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            indexAxis: 'y'
+        }
+    });
+
+    const adSpendCtx = document.getElementById('adSpendChart').getContext('2d');
+    charts.adSpendChart = new Chart(adSpendCtx, {
+        type: 'bar',
+        data: {
+            labels: months.slice(0, monthIndex + 1),
+            datasets: [{
+                label: 'Total Cost (AUD)',
+                data: allData.adsOverview.map(d => d.cost).slice(0, monthIndex + 1),
+                backgroundColor: '#a0aec0',
+                yAxisID: 'y',
+            }, {
+                label: 'Avg. CPC (AUD)',
+                data: allData.adsOverview.map(d => d.cpc).slice(0, monthIndex + 1),
+                backgroundColor: '#c5a07e',
+                type: 'line',
+                yAxisID: 'y1',
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            scales: {
+                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Total Cost (AUD)' } },
+                y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Avg. CPC (AUD)' }, grid: { drawOnChartArea: false } }
+            }
+        }
+    });
+}
+
+
+function setupNavigation() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            const tab = link.dataset.tab;
+            const monthIndex = parseInt(monthSelector.value);
+            renderTab(tab, monthIndex);
+        });
+    });
+}
+
+function renderTab(tab, monthIndex) {
+    switch (tab) {
+        case 'summary': renderSummaryTab(monthIndex); break;
+        case 'web': renderWebTab(monthIndex); break;
+        case 'seo': renderSeoTab(monthIndex); break;
+        case 'ads': renderAdsTab(monthIndex); break;
+        default: renderSummaryTab(monthIndex);
+    }
+}
+
+monthSelector.addEventListener('change', (e) => {
+    const monthIndex = parseInt(e.target.value);
+    const activeTab = document.querySelector('.nav-link.active').dataset.tab;
+    renderTab(activeTab, monthIndex);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Set selector to the latest available month (August)
+    monthSelector.value = "7";
+    renderSummaryTab(7);
+    setupNavigation();
+});
+
+</script>
+</body>
+</html>
