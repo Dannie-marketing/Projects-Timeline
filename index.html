@@ -1,29 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Australian Turntables - Marketing KPI Dashboard 2025</title>
+    <title>Marketing & Sales Strategic Plan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals with Subtle Accents -->
-    <!-- Application Structure Plan: A tab-based navigation SPA is chosen for clarity and user focus. The structure includes: 1) A 'Performance Summary' as the default landing page for a high-level overview. 2) 'Website & Engagement' to analyze user behavior and traffic sources. 3) 'SEO & Keywords' for organic search performance. 4) 'Paid Ads & Conversions' to evaluate advertising ROI. This thematic separation allows users to dive into specific areas of interest without being overwhelmed, providing a logical flow from general overview to specific channels. Interactivity is centered around a month-selector dropdown that updates all charts and tables on the current tab, enabling easy trend analysis. -->
-    <!-- Visualization & Content Choices: Data from various CSVs is synthesized into interactive elements. Website traffic trends (Goal: Change) are shown with a Line Chart (Chart.js) for easy visualization of user and engagement metrics over time. Traffic sources (Goal: Compare) are visualized with a Doughnut Chart (Chart.js) to show proportions. Keyword rankings and ad campaign data (Goal: Organize/Compare) are presented in dynamic HTML tables with JS-based filtering for detailed analysis. Conversion data (Goal: Compare) uses a Bar Chart (Chart.js) to compare form submissions across months. Blog performance (Goal: Organize) is a sortable HTML table. The month selector interaction (Interaction: Filter) provides a unified way to explore the data month-by-month across all sections, making the dashboard dynamic and easy to use. -->
+    <!-- Chosen Palette: Strategic Sandstone -->
+    <!-- Application Structure Plan: A single-page, vertically scrolling dashboard with a sticky top navigation. Key sections include Overview, Market Analysis, a new Tabbed Tactical Marketing Plan, Sales Flow, and Strategic Review. The new tabbed interface for the tactical plan was chosen to organize a high volume of sequential information (quarterly actions) in a compact, user-friendly manner, making it easier to navigate and digest the year-long strategy without overwhelming the user. -->
+    <!-- Visualization & Content Choices: 
+        - Sales Targets: Bar Chart (Chart.js) to compare annual goals. Goal: Compare.
+        - Buyer Personas: Styled cards (HTML/CSS Grid) to organize qualitative data. Goal: Organize.
+        - Marketing Tactical Plan: A new Tabbed Interface (HTML/CSS/JS) organizes quarterly plans. Each tab contains a sequential list of "touches" that align with the sales goal of 7 interactions in 40 days. This structure visualizes a campaign flow. Goal: Organize a process.
+        - Tactical Sales Flow: Interactive Diagram and Matrix (HTML/CSS) for process understanding. Goal: Organize a process.
+        - Analysis/Questions: Accordions (HTML/CSS/JS) to manage dense text. Goal: Organize qualitative insights.
+        - AI Assistant: Form elements (HTML/JS) for generative AI capabilities. Goal: Augment user creativity.
+    -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8f7f4;
-            color: #333;
+            background-color: #FDFBF7;
+            color: #3D3B38;
         }
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 900px;
+            max-width: 700px;
             margin-left: auto;
             margin-right: auto;
-            height: 350px;
+            height: 300px;
             max-height: 400px;
         }
         @media (min-width: 768px) {
@@ -31,584 +38,663 @@
                 height: 400px;
             }
         }
-        .nav-link {
+        .stage-arrow {
+            color: #C8B8A3;
+            font-size: 2.5rem;
+            line-height: 1;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .accordion-item.open .accordion-content {
+            max-height: 1000px;
+        }
+        .accordion-item.open .accordion-arrow {
+            transform: rotate(180deg);
+        }
+        .accordion-arrow {
+            transition: transform 0.3s ease-in-out;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #A8763E;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .tab-button {
             transition: all 0.3s ease;
         }
-        .nav-link.active {
-            border-bottom-color: #c5a07e;
-            color: #c5a07e;
-            font-weight: 600;
-        }
-        .kpi-card {
-            background-color: #ffffff;
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            transition: transform 0.2s ease-in-out;
-        }
-        .kpi-card:hover {
-            transform: translateY(-5px);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        thead th {
-            background-color: #f9fafb;
-            font-weight: 600;
-            color: #4b5563;
-        }
-        tbody tr:nth-child(even) {
-            background-color: #f9fafb;
+        .tab-button.active {
+            background-color: #A8763E;
+            color: white;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
         }
     </style>
 </head>
 <body class="antialiased">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-800">Australian Turntables</h1>
-            <p class="text-xl text-gray-500 mt-2">Marketing KPI Dashboard 2025</p>
-        </header>
 
-        <main>
-            <div class="bg-white rounded-lg shadow-md p-4 mb-6">
-                <div class="flex flex-col sm:flex-row justify-between items-center">
-                    <p class="text-gray-600 mb-2 sm:mb-0">Select a month to view detailed statistics:</p>
-                    <select id="monthSelector" class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#c5a07e]">
-                        <option value="7">August</option>
-                        <option value="6">July</option>
-                        <option value="5">June</option>
-                        <option value="4">May</option>
-                        <option value="3">April</option>
-                        <option value="2">March</option>
-                        <option value="1">February</option>
-                        <option value="0">January</option>
-                    </select>
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-[#A8763E]">Strategic Plan Dashboard</h1>
+            <div class="hidden md:flex flex-wrap space-x-4 text-sm font-medium">
+                <a href="#overview" class="hover:text-[#A8763E] transition-colors">Overview</a>
+                <a href="#market" class="hover:text-[#A8763E] transition-colors">Market & Products</a>
+                <a href="#tactical-plan" class="hover:text-[#A8763E] transition-colors">Tactical Plan</a>
+                <a href="#flow" class="hover:text-[#A8763E] transition-colors">Sales Flow</a>
+                <a href="#analysis" class="hover:text-[#A8763E] transition-colors">Analysis</a>
+                <a href="#questions" class="hover:text-[#A8763E] transition-colors">CMO Questions</a>
+                <a href="#ai-assistant" class="hover:text-[#A8763E] transition-colors">AI Assistant</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="overview" class="mb-20 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">Strategic Overview</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">This section provides a high-level view of the key financial targets and funnel metrics for the next three fiscal years. These numbers represent the core objectives of the sales and marketing strategy.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                    <h3 class="text-sm font-medium text-gray-500">3-Year Sales Target</h3>
+                    <p class="text-3xl font-bold text-[#A8763E] mt-2">$48.5M</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                    <h3 class="text-sm font-medium text-gray-500">Target Companies</h3>
+                    <p class="text-3xl font-bold text-[#A8763E] mt-2">5,490</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                    <h3 class="text-sm font-medium text-gray-500">Required Sales</h3>
+                    <p class="text-3xl font-bold text-[#A8763E] mt-2">1,131</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                    <h3 class="text-sm font-medium text-gray-500">Target Market Share</h3>
+                    <p class="text-3xl font-bold text-[#A8763E] mt-2">~21%</p>
                 </div>
             </div>
 
-            <nav class="flex justify-center border-b-2 border-gray-200 mb-8">
-                <a href="#summary" class="nav-link text-gray-500 border-b-2 border-transparent px-6 py-3 text-lg active" data-tab="summary">Performance Summary</a>
-                <a href="#web" class="nav-link text-gray-500 border-b-2 border-transparent px-6 py-3 text-lg" data-tab="web">Website & Engagement</a>
-                <a href="#seo" class="nav-link text-gray-500 border-b-2 border-transparent px-6 py-3 text-lg" data-tab="seo">SEO & Keywords</a>
-                <a href="#ads" class="nav-link text-gray-500 border-b-2 border-transparent px-6 py-3 text-lg" data-tab="ads">Paid Ads & Conversions</a>
-            </nav>
-
-            <div id="dashboardContent">
-                <!-- Tab content will be injected here by JavaScript -->
+            <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-100">
+                <h3 class="text-xl font-semibold text-center mb-4">Annual Sales Targets</h3>
+                <div class="chart-container">
+                    <canvas id="salesTargetsChart"></canvas>
+                </div>
             </div>
-        </main>
-    </div>
+        </section>
 
-<script>
-const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const currentMonthIndex = new Date().getMonth(); 
-const monthSelector = document.getElementById('monthSelector');
+        <section id="market" class="mb-20 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">Market & Products: The Australian Context</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">Understanding the Australian market context is crucial. The following sections detail the core problems we solve with local statistics, our product segments, and the key buyer personas we are targeting.</p>
 
-const allData = {
-    webTraffic: {
-        global: {
-            users: [2089, 2252, 2273, 1950, 2100, 2125, 2379, 2347],
-            viewsPerUser: [2.44, 2.78, 2.96, 2.65, 2.82, 3.42, 3.13, 3.31],
-            engagementRate: [60.80, 56.20, 59.50, 63.70, 65.20, 67.01, 67.8, 72.23],
-            avgEngagementTime: [49, 48, 50, 50, 59, 55, 48, 54]
-        },
-        australia: {
-            users: [1613, 1679, 1647, 1426, 1539, 1475, 1648, 1619],
-            viewsPerUser: [2.4, 2.83, 2.79, 2.64, 2.72, 3.16, 3.04, 3.21],
-            engagementRate: [60.90, 56.40, 62.20, 65.60, 67.80, 68.1, 68.2, 73.13],
-            avgEngagementTime: [48, 49, 52, 53, 61, 58, 49, 56]
-        }
-    },
-    conversionsBySource: [
-        { month: 'January', organic: 46.95, direct: 13.41, paid: 18.90, referral: 0.61 },
-        { month: 'February', organic: 33.33, direct: 12.90, paid: 17.20, referral: 0.54 },
-        { month: 'March', organic: 27.61, direct: 15.34, paid: 18.40, referral: 0.61 },
-        { month: 'April', organic: 17.26, direct: 8.41, paid: 16.81, referral: 0.88 },
-        { month: 'May', organic: 24.76, direct: 10.48, paid: 16.67, referral: 1.43 },
-        { month: 'June', organic: 32.06, direct: 17.70, paid: 16.27, referral: 0.86 },
-        { month: 'July', organic: 32.46, direct: 21.05, paid: 6.58, referral: 0.44 },
-        { month: 'August', organic: 35.12, direct: 19.50, paid: 7.12, referral: 0.50 }
-    ],
-    adConversions: {
-        labels: ["Calculator prices", "Contact us", "Digital library", "Brochure", "Maintenance", "USA/Canada form", "Podium"],
-        data: [
-            [18, 7, 4, 0, 0, 0, 4], // Jan
-            [8, 7, 13, 2, 0, 0, 19], // Feb
-            [6, 11, 7, 0, 1, 5, 4], // Mar
-            [10, 16, 9, 0, 1, 3, 5], // Apr
-            [15, 8, 8, 0, 0, 4, 0], // May
-            [13, 5, 10, 1, 0, 5, 3], // Jun
-            [4, 3, 4, 1, 0, 3, 2], // Jul
-            [6, 4, 10, 1, 0, 1, 7], // Aug
-        ]
-    },
-    keywordRankingAustralia: [
-        { month: 'January', avgPosition: 10, topQueries: [{q: 'car turntable', pos: 1.24}, {q: 'turntable for driveway', pos: 1.8}, {q: 'turntables australia', pos: 4.88}] },
-        { month: 'February', avgPosition: 8.9, topQueries: [{q: 'car turntable', pos: 1.1}, {q: 'driveway turntable', pos: 1.5}, {q: 'car rotating platform', pos: 3.2}] },
-        { month: 'March', avgPosition: 8.7, topQueries: [{q: 'car turntable', pos: 1.0}, {q: 'garage turntable', pos: 2.1}, {q: 'turntable price', pos: 4.5}] },
-        { month: 'April', avgPosition: 9.1, topQueries: [{q: 'car turntable', pos: 1.3}, {q: 'car turntable cost', pos: 2.5}, {q: 'heavy duty turntable', pos: 5.1}] },
-        { month: 'May', avgPosition: 8.9, topQueries: [{q: 'car turntable', pos: 1.2}, {q: 'vehicle turntable', pos: 2.8}, {q: 'revolving platform', pos: 6.0}] },
-        { month: 'June', avgPosition: 7.8, topQueries: [{q: 'car turntable', pos: 1.1}, {q: 'driveway turntable cost', pos: 2.2}, {q: 'turntable solutions', pos: 4.8}] },
-        { month: 'July', avgPosition: 20.6, topQueries: [{q: 'car turntable', pos: 1.5}, {q: 'turntable for car', pos: 3.0}, {q: 'car display turntable', pos: 7.2}] },
-        { month: 'August', avgPosition: 17.1, topQueries: [{q: 'car turntable', pos: 1.4}, {q: 'truck turntable', pos: 2.9}, {q: 'rotating car platform', pos: 6.5}] }
-    ],
-    adsOverview: [
-        { month: 'January', clicks: 841, impr: 71200, ctr: '1.18%', cost: 1270.38, cpc: 1.51 },
-        { month: 'February', clicks: 950, impr: 85000, ctr: '1.12%', cost: 1500.00, cpc: 1.58 },
-        { month: 'March', clicks: 890, impr: 78000, ctr: '1.14%', cost: 1450.50, cpc: 1.63 },
-        { month: 'April', clicks: 1020, impr: 92000, ctr: '1.11%', cost: 1700.20, cpc: 1.67 },
-        { month: 'May', clicks: 980, impr: 88000, ctr: '1.11%', cost: 1650.00, cpc: 1.68 },
-        { month: 'June', clicks: 1100, impr: 95000, ctr: '1.16%', cost: 1850.00, cpc: 1.68 },
-        { month: 'July', clicks: 1050, impr: 93000, ctr: '1.13%', cost: 1780.75, cpc: 1.70 },
-        { month: 'August', clicks: 881, impr: 62474, ctr: '1.41%', cost: 1279.98, cpc: 1.45 }
-    ],
-    popularBlogs: [
-        [ // January
-            { page: '/blog/tips-for-selecting-a-car-turntable', users: 56, rate: 47.54, time: 51 },
-            { page: '/blog/a-comprehensive-guide-on-truck-turntables', users: 23, rate: 65.22, time: 33 },
-            { page: '/blog/a-comprehensive-guide-on-car-turntables', users: 21, rate: 81.82, time: 87 }
-        ],[ // February
-            { page: '/blog/tips-for-selecting-a-car-turntable', users: 35, rate: 62.16, time: 75 },
-            { page: '/blog/double-car-turntable', users: 28, rate: 82.76, time: 72 },
-            { page: '/blog/a-comprehensive-guide-on-truck-turntables', users: 25, rate: 60.00, time: 45 }
-        ],[ // March
-            { page: '/blog/tips-for-selecting-a-car-turntable', users: 42, rate: 55.00, time: 65 },
-            { page: '/blog/a-comprehensive-guide-on-car-turntables', users: 33, rate: 78.00, time: 80 },
-            { page: '/blog/driveway-turntables-for-limited-space', users: 24, rate: 65.50, time: 50 }
-        ],[ // April
-            { page: '/blog/a-comprehensive-guide-on-truck-turntables', users: 45, rate: 70.10, time: 60 },
-            { page: '/blog/maximize-your-car-garage-space', users: 38, rate: 85.00, time: 78 },
-            { page: '/blog/tips-for-selecting-a-car-turntable', users: 30, rate: 58.20, time: 55 }
-        ],[ // May
-            { page: '/blog/double-car-turntable', users: 50, rate: 88.00, time: 90 },
-            { page: '/blog/car-turntable-on-a-gradient', users: 35, rate: 75.00, time: 62 },
-            { page: '/blog/everything-you-need-to-know-about-driveway-turntables', users: 28, rate: 68.00, time: 48 }
-        ],[ // June
-            { page: '/blog/a-closer-look-at-safety-and-risks', users: 48, rate: 72.00, time: 58 },
-            { page: '/blog/tips-for-selecting-a-car-turntable', users: 40, rate: 60.00, time: 70 },
-            { page: '/blog/maximize-your-car-garage-space', users: 32, rate: 89.00, time: 85 }
-        ],[ // July
-            { page: '/blog/a-comprehensive-guide-on-car-turntables', users: 55, rate: 80.00, time: 88 },
-            { page: '/blog/everything-you-need-to-know-about-driveway-turntables', users: 41, rate: 70.00, time: 60 },
-            { page: '/blog/car-turntable-on-a-gradient', users: 29, rate: 76.92, time: 50 }
-        ],[ // August
-            { page: '/blog/a-closer-look-at-safety-and-risks-in-australian-construction', users: 32, rate: 68.29, time: 33 },
-            { page: '/blog/maximize-your-car-garage-space-with-a-smart-double-car-turntable', users: 28, rate: 89.19, time: 39 },
-            { page: '/blog/a-comprehensive-guide-on-truck-turntables', users: 24, rate: 85.19, time: 42 }
-        ],
-    ]
-};
+            <div class="space-y-12">
+                <div class="bg-white p-6 sm:p-8 rounded-lg shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold mb-6 text-center text-[#A8763E]">The Australian Problem Ecosystem We Solve</h3>
+                    <div class="text-center mb-6">
+                        <div class="inline-block bg-[#A8763E] text-white p-4 rounded-lg shadow-lg">
+                            <h4 class="text-lg font-bold">Core Problem</h4>
+                            <p>Turning around in high-risk environments</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                        <div class="border border-red-200 bg-red-50/50 p-4 rounded-lg">
+                            <h5 class="font-bold text-red-800">Risk: Accidents & Injuries</h5>
+                            <p class="text-gray-700 mt-1">To pedestrians and workers from vehicle movements, especially in driveways and worksites.</p>
+                            <p class="mt-2 text-xs text-red-700 font-semibold"><strong>AU Stat:</strong> In Australia, 9% of all pedestrian injuries are a result of reversing collisions, with 70% of these happening in driveways. (Source: Aust. Dept. of Infrastructure)</p>
+                        </div>
+                        <div class="border border-yellow-200 bg-yellow-50/50 p-4 rounded-lg">
+                            <h5 class="font-bold text-yellow-800">Risk: Asset Damage</h5>
+                            <p class="text-gray-700 mt-1">To vehicles, goods, and machinery during difficult maneuvering in logistics and construction.</p>
+                             <p class="mt-2 text-xs text-yellow-700 font-semibold"><strong>AU Stat:</strong> Vehicle incidents made up 42% of all Australian work-related fatalities in 2023, representing a significant cost in assets and lives. (Source: Safe Work Australia)</p>
+                        </div>
+                        <div class="border border-blue-200 bg-blue-50/50 p-4 rounded-lg">
+                            <h5 class="font-bold text-blue-800">Risk: Operational Inefficiency</h5>
+                            <p class="text-gray-700 mt-1">Causing costly overruns and project delays due to slow, inefficient vehicle movements on site.</p>
+                             <p class="mt-2 text-xs text-blue-700 font-semibold"><strong>AU Stat:</strong> 77% of large Australian construction projects are delayed by over 40%, often due to poor on-site risk and logistics management. (Source: ECU Research)</p>
+                        </div>
+                         <div class="border border-purple-200 bg-purple-50/50 p-4 rounded-lg col-span-1 md:col-span-2 lg:col-span-1">
+                            <h5 class="font-bold text-purple-800">Risk: Fines & Penalties</h5>
+                            <p class="text-gray-700 mt-1">From illegally reversing onto streets, a common issue with constrained residential and commercial properties.</p>
+                             <p class="mt-2 text-xs text-purple-700 font-semibold"><strong>AU Stat:</strong> Unsafe reversing fines are significant, reaching up to $616 in South Australia and $227 + 2 demerit points in NSW.</p>
+                        </div>
+                         <div class="border border-green-200 bg-green-50/50 p-4 rounded-lg col-span-1 lg:col-span-2">
+                            <h5 class="font-bold text-green-800">Risk: Compliance & Approvals</h5>
+                            <p class="text-gray-700 mt-1">Failure to get council development approval due to non-compliant vehicle access and turning plans.</p>
+                            <p class="mt-2 text-xs text-green-700 font-semibold"><strong>AU Stat:</strong> Australian councils (e.g., Central Coast, Sunshine Coast) require compliant vehicle access plans for development approval, often mandating forward-only exits.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-6 border-t-4 border-double border-gray-300">
+                         <h4 class="text-center text-lg font-bold text-gray-700">Root Causes</h4>
+                         <p class="text-center text-gray-600 mt-2">These risks are generated by fundamental <strong class="text-gray-800">space and time constraints</strong>: tight/long driveways, small construction sites, restricted movement areas, and the increasing need to maximize usable residential or commercial space.</p>
+                    </div>
+                </div>
 
-const charts = {};
+                <div class="bg-white p-8 rounded-lg shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold mb-6 text-[#A8763E] text-center">Product Segmentation</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="border border-gray-200 rounded-lg p-6">
+                            <h4 class="text-lg font-bold mb-4">A. Car Turntables</h4>
+                            <div class="space-y-4">
+                                <div><h5 class="font-semibold">A.1 Residential</h5><p class="text-sm text-gray-600">Products: CRX, Spinsy Onsurface</p></div>
+                                <div><h5 class="font-semibold">A.2 Commercial</h5><p class="text-sm text-gray-600">Products: Photobooth Turntable</p></div>
+                            </div>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-6">
+                            <h4 class="text-lg font-bold mb-4">B. Truck Turntables</h4>
+                            <div class="space-y-4">
+                                 <div><h5 class="font-semibold">B.1 Commercial</h5><p class="text-sm text-gray-600">Use Case: Loading Docks, Warehousing, Logistics</p></div>
+                                 <div><h5 class="font-semibold">B.2 Material Handling</h5><p class="text-sm text-gray-600">Use Case: General industrial material movement</p></div>
+                                 <div><h5 class="font-semibold">B.3 Construction</h5><p class="text-sm text-gray-600">Products: HTT Relocatable (Hire model)</p></div>
+                                 <div><h5 class="font-semibold">B.4 Mining</h5><p class="text-sm text-gray-600">Products: Revolva Portable, HTT Relocatable (Hire model)</p></div>
+                                 <div><h5 class="font-semibold">B.5 Tunneling</h5><p class="text-sm text-gray-600">Products: Revolva Portable</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-function destroyCharts() {
-    Object.values(charts).forEach(chart => {
-        if (chart) chart.destroy();
-    });
-}
+                <div class="bg-white p-8 rounded-lg shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold mb-6 text-[#A8763E] text-center">Key Buyer Personas</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                            <h4 class="text-lg font-bold">"Prestige Peter", The Homeowner</h4>
+                            <p class="text-sm font-medium text-gray-500 mb-4">Segment: A.1 Residential</p>
+                            <h5 class="font-semibold mt-4">Pain Points:</h5>
+                            <ul class="list-disc list-inside text-sm text-gray-700">
+                                <li>Anxiety about scratching his luxury car in a tight urban driveway.</li>
+                                <li>Constant worry about his children's safety when reversing.</li>
+                                <li>Frustration with council demanding a turning solution for his new build.</li>
+                                <li>Wants to maximize property usability and add a 'wow' factor.</li>
+                            </ul>
+                             <h5 class="font-semibold mt-4">Job to be Done:</h5>
+                            <p class="text-sm text-gray-700">"Help me create a safe, convenient, and prestigious entry/exit for my home that protects my family and assets without hassle."</p>
+                        </div>
+                        
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                            <h4 class="text-lg font-bold">"Efficiency Eva", The Logistics Manager</h4>
+                            <p class="text-sm font-medium text-gray-500 mb-4">Segment: B.1 Commercial (Logistics)</p>
+                             <h5 class="font-semibold mt-4">Pain Points:</h5>
+                            <ul class="list-disc list-inside text-sm text-gray-700">
+                                <li>Losing money from slow truck turnarounds and operational bottlenecks.</li>
+                                <li>Costly damage to trucks, docks, and goods from reversing accidents.</li>
+                                <li>High WHS incident rates and rising insurance premiums.</li>
+                                <li>Pressure to improve throughput with existing dock space.</li>
+                            </ul>
+                             <h5 class="font-semibold mt-4">Job to be Done:</h5>
+                            <p class="text-sm text-gray-700">"Help me optimize my loading bay to increase throughput, eliminate preventable accidents, and reduce the associated operational costs."</p>
+                        </div>
 
-function createKpiCard(title, value, change, isPositive, subtext = '') {
-    const changeIndicator = isPositive ? '↑' : '↓';
-    const changeColor = isPositive ? 'text-green-500' : 'text-red-500';
-    return `
-        <div class="kpi-card text-center">
-            <h3 class="text-lg font-semibold text-gray-500">${title}</h3>
-            <p class="text-4xl font-bold my-2">${value}</p>
-            <div class="flex justify-center items-center text-md">
-                <span class="${changeColor} mr-1 font-semibold">${changeIndicator} ${change}%</span>
-                <span class="text-gray-500">vs last month</span>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                            <h4 class="text-lg font-bold">"Safety Steve", The Site Manager</h4>
+                            <p class="text-sm font-medium text-gray-500 mb-4">Segment: B.3 Construction & B.5 Tunneling</p>
+                             <h5 class="font-semibold mt-4">Pain Points:</h5>
+                            <ul class="list-disc list-inside text-sm text-gray-700">
+                                <li>Intense pressure to meet strict WHS compliance on a hazardous site.</li>
+                                <li>Project delays caused by inefficient truck movements and deliveries.</li>
+                                <li>High risk of serious incidents with heavy vehicles in confined areas.</li>
+                                <li>Needs a flexible, relocatable solution for temporary site access.</li>
+                            </ul>
+                             <h5 class="font-semibold mt-4">Job to be Done:</h5>
+                            <p class="text-sm text-gray-700">"Help me maintain a safe, compliant, and efficient flow of heavy vehicles on my constrained site to keep the project on schedule and budget."</p>
+                        </div>
+
+                         <div class="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                            <h4 class="text-lg font-bold">"Operations Owen", The Mining Supervisor</h4>
+                            <p class="text-sm font-medium text-gray-500 mb-4">Segment: B.4 Mining</p>
+                             <h5 class="font-semibold mt-4">Pain Points:</h5>
+                            <ul class="list-disc list-inside text-sm text-gray-700">
+                                <li>Extreme safety risks of operating heavy machinery underground.</li>
+                                <li>Massive financial losses from any operational downtime.</li>
+                                <li>Equipment must be incredibly rugged, reliable, and easy to maintain.</li>
+                                <li>Constant struggle with very limited space for vehicle maneuvering.</li>
+                            </ul>
+                             <h5 class="font-semibold mt-4">Job to be Done:</h5>
+                            <p class="text-sm text-gray-700">"Help me ensure the continuous and safe operation of heavy vehicles in hazardous, space-restricted environments to maximize productivity."</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            ${subtext ? `<p class="text-sm text-gray-400 mt-2">${subtext}</p>` : ''}
-        </div>
-    `;
-}
+        </section>
+        
+        <section id="tactical-plan" class="mb-20 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">Recommended Marketing Tactical Plan</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">This year-long action plan translates our strategy into concrete marketing activities. It's structured as a series of campaigns, with each quarter featuring multiple "touches" to warm up leads before direct sales engagement.</p>
+            
+            <div class="w-full max-w-5xl mx-auto">
+                <div class="mb-4 flex space-x-2 p-1 bg-gray-200 rounded-lg">
+                    <button class="tab-button active w-full py-2 px-4 rounded-md font-semibold" data-tab="q1">Quarter 1</button>
+                    <button class="tab-button w-full py-2 px-4 rounded-md font-semibold" data-tab="q2">Quarter 2</button>
+                    <button class="tab-button w-full py-2 px-4 rounded-md font-semibold" data-tab="q3">Quarter 3</button>
+                    <button class="tab-button w-full py-2 px-4 rounded-md font-semibold" data-tab="q4">Quarter 4</button>
+                </div>
 
-function renderSummaryTab(monthIndex) {
-    const content = document.getElementById('dashboardContent');
-    destroyCharts();
+                <div id="q1" class="tab-content bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold mb-4">Q1: Foundation & Residential Focus</h3>
+                    <p class="text-sm text-gray-600 mb-6">Objective: Build foundational content and generate initial awareness, focusing on the high-intent residential market ("Prestige Peter") to secure quick wins.</p>
+                    <div class="space-y-4">
+                        <div class="p-4 border-l-4 border-blue-300 bg-blue-50">
+                            <h4 class="font-bold">Phase 1 (Weeks 1-6): Awareness & Authority Building</h4>
+                            <ul class="list-disc list-inside text-sm text-gray-700 mt-2 space-y-1">
+                                <li><span class="font-semibold">Touch 1-2:</span> Publish two blog posts: "The Ultimate Guide to Driveway Safety in Australia" and "Adding Value to Your Property with Smart Design".</li>
+                                <li><span class="font-semibold">Touch 3:</span> Pitch a feature story to `Domain.com.au` or `RealEstate.com.au` on innovative solutions for challenging properties, showcasing a residential turntable.</li>
+                            </ul>
+                        </div>
+                         <div class="p-4 border-l-4 border-green-300 bg-green-50">
+                            <h4 class="font-bold">Phase 2 (Weeks 7-12): Lead Capture & Sales Handoff</h4>
+                            <ul class="list-disc list-inside text-sm text-gray-700 mt-2 space-y-1">
+                                <li><span class="font-semibold">Touch 4:</span> Launch downloadable lead magnet: "The Architect's Guide to Council Approval for Vehicle Access".</li>
+                                <li><span class="font-semibold">Touch 5:</span> Run targeted Google & Facebook Ads to homeowners and architects promoting the guide.</li>
+                                <li><span class="font-semibold">Touch 6:</span> Implement a 3-part email nurture sequence for all guide downloaders, sharing case studies and product info.</li>
+                                <li><span class="font-semibold">Touch 7 (Handoff):</span> Qualified leads from the nurture sequence are passed to Sales for their 40-day outreach.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
 
-    const currentMonthData = {
-        globalUsers: allData.webTraffic.global.users[monthIndex],
-        globalEngagement: allData.webTraffic.global.engagementRate[monthIndex],
-        ausUsers: allData.webTraffic.australia.users[monthIndex],
-        ausEngagement: allData.webTraffic.australia.engagementRate[monthIndex],
-        adClicks: allData.adsOverview[monthIndex].clicks,
-        adCost: allData.adsOverview[monthIndex].cost,
-        seoPosition: allData.keywordRankingAustralia[monthIndex].avgPosition,
-        conversions: allData.adConversions.data[monthIndex].reduce((a, b) => a + b, 0)
-    };
+                <div id="q2" class="tab-content hidden bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold mb-4">Q2: Commercial & Construction Push</h3>
+                    <p class="text-sm text-gray-600 mb-6">Objective: Expand into the B2B space by targeting the logistics ("Efficiency Eva") and construction ("Safety Steve") personas with segment-specific value propositions.</p>
+                    <div class="space-y-4">
+                        <div class="p-4 border-l-4 border-blue-300 bg-blue-50">
+                            <h4 class="font-bold">Phase 1 (Weeks 1-6): Video Content & B2B Engagement</h4>
+                             <ul class="list-disc list-inside text-sm text-gray-700 mt-2 space-y-1">
+                                <li><span class="font-semibold">Touch 1:</span> Produce and launch a high-quality video case study of a loading dock turntable installation, focusing on ROI.</li>
+                                <li><span class="font-semibold">Touch 2-3:</span> Promote video via LinkedIn to Logistics and Warehouse managers. Create and share 2 short articles based on the case study results.</li>
+                             </ul>
+                        </div>
+                        <div class="p-4 border-l-4 border-green-300 bg-green-50">
+                            <h4 class="font-bold">Phase 2 (Weeks 7-12): High-Value Content & Lead Qualification</h4>
+                            <ul class="list-disc list-inside text-sm text-gray-700 mt-2 space-y-1">
+                                <li><span class="font-semibold">Touch 4:</span> Host a webinar on "Improving WHS and Efficiency on Australian Construction Sites".</li>
+                                <li><span class="font-semibold">Touch 5:</span> Run targeted LinkedIn ads to "Safety Steve" promoting the webinar registration.</li>
+                                <li><span class="font-semibold">Touch 6:</span> Post-webinar, send attendees a follow-up with the recording and an exclusive whitepaper.</li>
+                                <li><span class="font-semibold">Touch 7 (Handoff):</span> Sales follows up with all webinar attendees, prioritizing those who engaged with follow-up materials.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
 
-    const prevMonthData = monthIndex > 0 ? {
-        globalUsers: allData.webTraffic.global.users[monthIndex - 1],
-        globalEngagement: allData.webTraffic.global.engagementRate[monthIndex - 1],
-        ausUsers: allData.webTraffic.australia.users[monthIndex - 1],
-        ausEngagement: allData.webTraffic.australia.engagementRate[monthIndex - 1],
-        adClicks: allData.adsOverview[monthIndex - 1].clicks,
-        adCost: allData.adsOverview[monthIndex - 1].cost,
-        seoPosition: allData.keywordRankingAustralia[monthIndex - 1].avgPosition,
-        conversions: allData.adConversions.data[monthIndex - 1].reduce((a, b) => a + b, 0)
-    } : currentMonthData;
+                <div id="q3" class="tab-content hidden bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold mb-4">Q3: Industrial Expansion & Events</h3>
+                    <p class="text-sm text-gray-600 mb-6">Objective: Penetrate the heavy industrial and mining sectors ("Operations Owen") and leverage physical events to generate high-quality leads.</p>
+                    <div class="space-y-4">
+                        <div class="p-4 border-l-4 border-blue-300 bg-blue-50">
+                            <h4 class="font-bold">Phase 1 (Weeks 1-6): Building Credibility in Heavy Industry</h4>
+                            <ul class="list-disc list-inside text-sm text-gray-700 mt-2 space-y-1">
+                                <li><span class="font-semibold">Touch 1:</span> Develop a technical whitepaper on "Maximising Uptime in Underground Mining with Portable Turntables".</li>
+                                <li><span class="font-semibold">Touch 2:</span> Submit articles and press releases to industry publications like `Australian Mining Review`.</li>
+                                <li><span class="font-semibold">Touch 3:</span> Create and promote a video demonstrating the Revolva turntable's ruggedness and portability.</li>
+                            </ul>
+                        </div>
+                         <div class="p-4 border-l-4 border-green-300 bg-green-50">
+                            <h4 class="font-bold">Phase 2 (Weeks 7-12): Trade Show & Lead Capture</h4>
+                            <ul class="list-disc list-inside text-sm text-gray-700 mt-2 space-y-1">
+                                <li><span class="font-semibold">Touch 4:</span> Pre-show email campaign to registered attendees of a major national construction/mining expo.</li>
+                                <li><span class="font-semibold">Touch 5:</span> Exhibit at the expo, focusing on live demos and lead capture (badge scans).</li>
+                                <li><span class="font-semibold">Touch 6:</span> Post-show follow-up email sequence to all captured leads, segmenting by persona.</li>
+                                <li><span class="font-semibold">Touch 7 (Handoff):</span> Sales begins their 40-day sequence with all qualified booth leads.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
 
-    function calculateChange(current, previous) {
-        if (previous === 0) return 0;
-        return (((current - previous) / previous) * 100).toFixed(2);
-    }
+                <div id="q4" class="tab-content hidden bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold mb-4">Q4: Advocacy, Retention & Planning</h4>
+                    <p class="text-sm text-gray-600 mb-6">Objective: Focus on converting existing pipeline, generating customer advocacy to build social proof, and analyzing performance to plan for the next year.</p>
+                    <div class="space-y-4">
+                         <div class="p-4 border-l-4 border-blue-300 bg-blue-50">
+                            <h4 class="font-bold">Phase 1 (Weeks 1-6): Nurture & Convert Existing Pipeline</h4>
+                            <ul class="list-disc list-inside text-sm text-gray-700 mt-2 space-y-1">
+                                <li><span class="font-semibold">Touch 1-3:</span> Launch retargeting ad campaigns across Google and LinkedIn showcasing testimonials and case studies to website visitors who have not converted.</li>
+                                <li><span class="font-semibold">Touch 4:</span> Send a "year-end solutions" email to all cold/stalled leads, highlighting key benefits and a final call-to-action.</li>
+                            </ul>
+                        </div>
+                         <div class="p-4 border-l-4 border-green-300 bg-green-50">
+                            <h4 class="font-bold">Phase 2 (Weeks 7-12): Customer Advocacy & Strategic Review</h4>
+                            <ul class="list-disc list-inside text-sm text-gray-700 mt-2 space-y-1">
+                                <li><span class="font-semibold">Touch 5:</span> Email campaign to all customers from the past year requesting testimonials and Google Reviews.</li>
+                                <li><span class="font-semibold">Touch 6:</span> Send a personalized "Thank You" and service reminder to key accounts, encouraging referrals.</li>
+                                <li><span class="font-semibold">Touch 7 (Internal):</span> Conduct a full-year marketing performance review against KPIs and finalize the strategic plan for the upcoming year.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="flow" class="mb-20 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">B2B Tactical Sales Flow</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">This is the operational core of our B2B strategy. The following diagram and matrix detail a generic customer journey. A key strategic challenge will be adapting this flow for the unique needs of each product segment and buyer persona.</p>
+            
+            <h3 class="text-xl font-semibold text-center mb-6">Interactive Flow Diagram</h3>
+            <div class="hidden lg:flex justify-between items-start space-x-2">
+                <div class="text-center w-1/6">
+                    <h4 class="font-bold text-lg mb-4 text-[#A8763E]">Awareness</h4>
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded-md shadow-sm border hover:shadow-lg transition-shadow">
+                            <p class="font-semibold text-sm">Case Studies</p>
+                            <p class="text-xs text-gray-500 mt-1">Action: Problem/Solution stories</p>
+                            <p class="text-xs font-bold text-blue-600 mt-2">Marketing</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="self-center stage-arrow">→</div>
+                <div class="text-center w-1/6">
+                    <h4 class="font-bold text-lg mb-4 text-[#A8763E]">Interest</h4>
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded-md shadow-sm border hover:shadow-lg transition-shadow">
+                            <p class="font-semibold text-sm">Inbound/Outbound</p>
+                            <p class="text-xs text-gray-500 mt-1">Action: Initial contact</p>
+                            <p class="text-xs font-bold text-blue-600 mt-2">Marketing</p>
+                        </div>
+                         <div class="bg-white p-3 rounded-md shadow-sm border hover:shadow-lg transition-shadow">
+                            <p class="font-semibold text-sm">1st Meeting</p>
+                            <p class="text-xs text-gray-500 mt-1">Action: Qualify & Connect</p>
+                            <p class="text-xs font-bold text-green-600 mt-2">Sales</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="self-center stage-arrow">→</div>
+                <div class="text-center w-1/6">
+                    <h4 class="font-bold text-lg mb-4 text-[#A8763E]">Evaluation</h4>
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded-md shadow-sm border hover:shadow-lg transition-shadow">
+                            <p class="font-semibold text-sm">2nd Meeting</p>
+                            <p class="text-xs text-gray-500 mt-1">Action: Technical solution</p>
+                            <p class="text-xs font-bold text-green-600 mt-2">Sales</p>
+                        </div>
+                         <div class="bg-white p-3 rounded-md shadow-sm border hover:shadow-lg transition-shadow">
+                            <p class="font-semibold text-sm">Quote Sent</p>
+                            <p class="text-xs text-gray-500 mt-1">Action: Present proposal</p>
+                            <p class="text-xs font-bold text-green-600 mt-2">Sales</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="self-center stage-arrow">→</div>
+                <div class="text-center w-1/6">
+                    <h4 class="font-bold text-lg mb-4 text-[#A8763E]">Commitment</h4>
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded-md shadow-sm border hover:shadow-lg transition-shadow">
+                            <p class="font-semibold text-sm">Follow Up</p>
+                            <p class="text-xs text-gray-500 mt-1">Action: Address concerns</p>
+                            <p class="text-xs font-bold text-green-600 mt-2">Sales</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="self-center stage-arrow">→</div>
+                <div class="text-center w-1/6">
+                    <h4 class="font-bold text-lg mb-4 text-[#A8763E]">Sale</h4>
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded-md shadow-sm border hover:shadow-lg transition-shadow">
+                            <p class="font-semibold text-sm">Contract/PO</p>
+                            <p class="text-xs text-gray-500 mt-1">Action: Close deal</p>
+                            <p class="text-xs font-bold text-green-600 mt-2">Sales</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="self-center stage-arrow">→</div>
+                <div class="text-center w-1/6">
+                    <h4 class="font-bold text-lg mb-4 text-[#A8763E]">Retention</h4>
+                    <div class="space-y-3">
+                         <div class="bg-white p-3 rounded-md shadow-sm border hover:shadow-lg transition-shadow">
+                            <p class="font-semibold text-sm">Testimonial</p>
+                            <p class="text-xs text-gray-500 mt-1">Action: Gather feedback</p>
+                            <p class="text-xs font-bold text-blue-600 mt-2">Marketing</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-md shadow-sm border hover:shadow-lg transition-shadow">
+                            <p class="font-semibold text-sm">Service/Upsell</p>
+                            <p class="text-xs text-gray-500 mt-1">Action: Nurture & Grow</p>
+                            <p class="text-xs font-bold text-green-600 mt-2">Sales</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="lg:hidden text-center text-gray-600 bg-gray-100 p-4 rounded-md">
+                Flow diagram is best viewed on larger screens. Please refer to the matrix below.
+            </div>
+
+            <h3 class="text-xl font-semibold text-center mt-16 mb-6">Tactical Flow Matrix</h3>
+            <div class="overflow-x-auto bg-white rounded-lg shadow-lg border border-gray-100">
+                <table class="w-full text-sm text-left text-gray-600">
+                    <thead class="bg-gray-50 text-xs uppercase">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Stage</th>
+                            <th scope="col" class="px-6 py-3">Touchpoint</th>
+                            <th scope="col" class="px-6 py-3">Action</th>
+                            <th scope="col" class="px-6 py-3">Responsible</th>
+                        </tr>
+                    </thead>
+                    <tbody id="flow-matrix-body">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="analysis" class="mb-20 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">Strategic Analysis</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">A plan is only as strong as its execution and its ability to adapt. This analysis identifies potential gaps, offers recommendations for strengthening the strategy, and outlines clear next steps for implementation.</p>
+            <div id="analysis-accordion" class="space-y-4 max-w-4xl mx-auto">
+            </div>
+        </section>
+
+        <section id="questions" class="mb-20 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">CMO & Marketing Manager's Review</h2>
+             <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">To ensure alignment and successful implementation, it's vital to challenge our assumptions and clarify details. The following are key questions and areas of concern that need to be addressed by the plan's creators.</p>
+            <div id="questions-accordion" class="space-y-4 max-w-4xl mx-auto">
+            </div>
+        </section>
+
+        <section id="ai-assistant" class="scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">AI Strategy Assistant</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">Leverage the power of generative AI to accelerate your strategic planning. Select a task, provide some context based on your goals, and let the assistant generate ideas, copy, and analysis for you.</p>
+
+            <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg border border-gray-100">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="ai-task" class="block text-sm font-medium text-gray-700">Select a Task</label>
+                        <select id="ai-task" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#A8763E] focus:border-[#A8763E] sm:text-sm rounded-md">
+                            <option value="slogans">Generate Marketing Slogans</option>
+                            <option value="pains">Brainstorm Buyer Pains</option>
+                            <option value="email">Draft Cold Outreach Email</option>
+                            <option value="risks">Identify Potential Risks</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="ai-context" class="block text-sm font-medium text-gray-700">Provide Context</label>
+                        <textarea id="ai-context" rows="3" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-[#A8763E] focus:border-[#A8763E]" placeholder="e.g., Residential turntables for tight driveways..."></textarea>
+                    </div>
+                </div>
+                <div class="mt-6 text-center">
+                    <button id="generate-button" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[#A8763E] hover:bg-[#8e6230] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A8763E]">
+                        Generate Content
+                    </button>
+                </div>
+
+                <div id="ai-output-container" class="mt-8">
+                    <div id="ai-loader" class="loader hidden"></div>
+                    <div id="ai-output" class="p-6 bg-gray-50 rounded-md border border-gray-200 text-gray-700 whitespace-pre-wrap">Please select a task and provide context to get started.</div>
+                </div>
+            </div>
+        </section>
+    </main>
     
-    const globalUsersChange = calculateChange(currentMonthData.globalUsers, prevMonthData.globalUsers);
-    const ausUsersChange = calculateChange(currentMonthData.ausUsers, prevMonthData.ausUsers);
-    const adClicksChange = calculateChange(currentMonthData.adClicks, prevMonthData.adClicks);
-    const conversionsChange = calculateChange(currentMonthData.conversions, prevMonthData.conversions);
-
-
-    content.innerHTML = `
-        <div id="summary" class="tab-content">
-             <div class="mb-8">
-                <h2 class="text-2xl font-bold text-gray-700 mb-4">Monthly Performance Overview for ${months[monthIndex]} 2025</h2>
-                <p class="text-gray-600">This section provides a high-level snapshot of key performance indicators across all marketing channels for the selected month. It's designed to give you a quick understanding of website traffic, user engagement, advertising effectiveness, and organic search visibility.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                ${createKpiCard('Total Global Users', currentMonthData.globalUsers.toLocaleString(), Math.abs(globalUsersChange), globalUsersChange >= 0)}
-                ${createKpiCard('Australian Users', currentMonthData.ausUsers.toLocaleString(), Math.abs(ausUsersChange), ausUsersChange >= 0)}
-                ${createKpiCard('Total Ad Clicks', currentMonthData.adClicks.toLocaleString(), Math.abs(adClicksChange), adClicksChange >= 0)}
-                ${createKpiCard('Total Conversions', currentMonthData.conversions, Math.abs(conversionsChange), conversionsChange >= 0)}
-            </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                     <h3 class="text-xl font-semibold mb-1">Website Users Trend</h3>
-                     <p class="text-gray-500 mb-4 text-sm">Global vs. Australia</p>
-                    <div class="chart-container"><canvas id="userTrendChart"></canvas></div>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                     <h3 class="text-xl font-semibold mb-1">Conversion Sources</h3>
-                     <p class="text-gray-500 mb-4 text-sm">Monthly breakdown by channel</p>
-                    <div class="chart-container"><canvas id="conversionSourceChart"></canvas></div>
-                </div>
-            </div>
+    <footer class="bg-white mt-20 border-t">
+        <div class="container mx-auto px-6 py-6 text-center text-gray-500 text-sm">
+            <p>&copy; Australian Turntables Strategic Plan Dashboard</p>
         </div>
-    `;
+    </footer>
 
-    const userTrendCtx = document.getElementById('userTrendChart').getContext('2d');
-    charts.userTrendChart = new Chart(userTrendCtx, {
-        type: 'line',
-        data: {
-            labels: months.slice(0, monthIndex + 1),
-            datasets: [{
-                label: 'Global Users',
-                data: allData.webTraffic.global.users.slice(0, monthIndex + 1),
-                borderColor: '#c5a07e',
-                backgroundColor: 'rgba(197, 160, 126, 0.1)',
-                fill: true,
-                tension: 0.4
-            }, {
-                label: 'Australian Users',
-                data: allData.webTraffic.australia.users.slice(0, monthIndex + 1),
-                borderColor: '#6b7280',
-                backgroundColor: 'rgba(107, 114, 128, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: { maintainAspectRatio: false, responsive: true }
-    });
-    
-    const conversionSourceData = allData.conversionsBySource[monthIndex];
-    const conversionSourceCtx = document.getElementById('conversionSourceChart').getContext('2d');
-    charts.conversionSourceChart = new Chart(conversionSourceCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Organic', 'Direct', 'Paid', 'Referral'],
-            datasets: [{
-                label: 'Conversion %',
-                data: [conversionSourceData.organic, conversionSourceData.direct, conversionSourceData.paid, conversionSourceData.referral],
-                backgroundColor: ['#c5a07e', '#a0aec0', '#6b7280', '#e2e8f0'],
-                hoverOffset: 4
-            }]
-        },
-        options: { maintainAspectRatio: false, responsive: true }
-    });
-}
-
-function renderWebTab(monthIndex) {
-    const content = document.getElementById('dashboardContent');
-    destroyCharts();
-    
-    content.innerHTML = `
-        <div id="web" class="tab-content">
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-gray-700 mb-4">Website & Engagement Analysis for ${months[monthIndex]} 2025</h2>
-                <p class="text-gray-600">Explore detailed metrics about your website's audience and their behavior. This section covers user engagement trends over time and highlights the most popular blog content, providing insights into what resonates most with your visitors.</p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                <h3 class="text-xl font-semibold mb-4">Engagement Rate vs. Avg. Engagement Time</h3>
-                <div class="chart-container"><canvas id="engagementChart"></canvas></div>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-xl font-semibold mb-4">Most Popular Blog Content</h3>
-                <div class="overflow-x-auto">
-                    <table id="blogTable">
-                        <thead><tr><th>Landing Page</th><th>Total Users</th><th>Engagement Rate (%)</th><th>Avg. Engagement Time (s)</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    `;
-
-    const engagementCtx = document.getElementById('engagementChart').getContext('2d');
-    charts.engagementChart = new Chart(engagementCtx, {
-        type: 'bar',
-        data: {
-            labels: months.slice(0, monthIndex + 1),
-            datasets: [{
-                label: 'Engagement Rate (%)',
-                data: allData.webTraffic.global.engagementRate.slice(0, monthIndex + 1),
-                backgroundColor: '#c5a07e',
-                yAxisID: 'y',
-            }, {
-                label: 'Avg. Engagement Time (s)',
-                data: allData.webTraffic.global.avgEngagementTime.slice(0, monthIndex + 1),
-                backgroundColor: '#a0aec0',
-                type: 'line',
-                yAxisID: 'y1',
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            responsive: true,
-            scales: {
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    title: { display: true, text: 'Engagement Rate (%)' }
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Chart.js for Sales Targets
+            const salesData = {
+                labels: ['FY25/26', 'FY26/27', 'FY27/28'],
+                targets: [14.5, 15.5, 18.5]
+            };
+            const ctx = document.getElementById('salesTargetsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: salesData.labels,
+                    datasets: [{
+                        label: 'Sales Target ($M)',
+                        data: salesData.targets,
+                        backgroundColor: '#A8763E',
+                        borderColor: '#8e6230',
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
                 },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    title: { display: true, text: 'Avg. Engagement Time (s)' },
-                    grid: { drawOnChartArea: false }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` $${c.raw}M` } } },
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Millions ($)' } }, x: { grid: { display: false } } }
+                }
+            });
+
+            // Tactical Flow Matrix
+            const tacticalFlowData = [
+                { stage: 'Awareness', touchpoint: 'Case Studies', action: 'Problem, solution, outcome focused stories', responsible: 'Marketing' },
+                { stage: 'Interest', touchpoint: 'Inbound/Outbound', action: 'First contact via phone/email', responsible: 'Marketing' },
+                { stage: 'Interest', touchpoint: '1st Meeting', action: 'Qualify lead, build connection', responsible: 'Sales' },
+                { stage: 'Evaluation', touchpoint: '2nd Meeting', action: 'Present technical solution & capability', responsible: 'Sales' },
+                { stage: 'Evaluation', touchpoint: 'Quote Sent', action: 'Present commercials & business case', responsible: 'Sales' },
+                { stage: 'Commitment', touchpoint: 'Follow Up', action: 'Follow up quote, handle objections', responsible: 'Sales' },
+                { stage: 'Sale', touchpoint: 'Contract/PO', action: 'Finalize contract and receive purchase order', responsible: 'Sales' },
+                { stage: 'Retention', touchpoint: 'Testimonial', action: 'Ask for review and case study', responsible: 'Marketing' },
+                { stage: 'Retention', touchpoint: 'Service/Upsell', action: 'Service contract and new opportunities', responsible: 'Sales' }
+            ];
+            const matrixBody = document.getElementById('flow-matrix-body');
+            tacticalFlowData.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = 'bg-white border-b';
+                row.innerHTML = `<td class="px-6 py-4 font-medium whitespace-nowrap">${item.stage}</td><td class="px-6 py-4">${item.touchpoint}</td><td class="px-6 py-4">${item.action}</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ${item.responsible === 'Marketing' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">${item.responsible}</span></td>`;
+                matrixBody.appendChild(row);
+            });
+
+            // Tab functionality for Tactical Plan
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.dataset.tab;
+
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    tabContents.forEach(content => {
+                        if (content.id === tabId) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // Accordion Data and Functionality
+            const analysisData = [
+                { title: 'Recommendations', content: '<ul><li class="mb-2"><strong>Segment-Specific Strategies:</strong> Create distinct go-to-market strategies for each major segment (Car vs. Truck) and their sub-markets (e.g., Residential vs. Mining vs. Logistics). They have vastly different buyers and needs.</li><li class="mb-2"><strong>Define Buyer Personas:</strong> Develop detailed personas for each new target segment. A residential homeowner is vastly different from a mining operations manager.</li><li class="mb-2"><strong>Marketing Automation:</strong> Implement a marketing automation platform to nurture leads from "Awareness" to "Interest" before sales handoff, with tailored content streams for each segment.</li><li class="mb-2"><strong>Distributor Enablement:</strong> Develop a formal enablement program for international distributors, including training and marketing collateral specific to the product segments most relevant to their region.</li></ul>' },
+                { title: 'Identified Gaps', content: '<ul><li class="mb-2"><strong>Segment-Specific Tactical Flow:</strong> The current sales flow is generic. It doesn\'t account for the vastly different sales cycles, decision-makers, and value propositions between a residential car turntable and a heavy-duty mining turntable.</li><li class="mb-2"><strong>D2C Segment:</strong> The plan explicitly ignores the Direct-to-Consumer channel, a potentially huge miss for the Residential Car Turntable segment (A.1).</li><li class="mb-2"><strong>Marketing-Sales Handoff (SLA):</strong> The flow lacks a defined Service Level Agreement (SLA). What are the criteria for a Sales Qualified Lead (SQL) for each segment?</li><li class="mb-2"><strong>Content Strategy:</strong> "Case Studies" are mentioned, but a broader content strategy with assets tailored to each specific segment (e.g., ROI calculators for logistics, safety whitepapers for mining) is missing.</li><li class="mb-2"><strong>Metrics & KPIs:</strong> The plan has high-level revenue targets but lacks granular KPIs for each segment and stage of the funnel (e.g., conversion rates, cost per lead, customer lifetime value per segment).</li></ul>' },
+                { title: 'Proposed Next Steps', content: '<ul><li class="mb-2"><strong>Q3 2025:</strong> Conduct workshops to define and document detailed buyer personas for each product sub-segment.</li><li class="mb-2"><strong>Q3 2025:</strong> Map out tailored customer journeys and tactical sales flows for at least two priority segments (e.g., Residential Car vs. Mining Truck).</li><li class="mb-2"><strong>Q4 2025:</strong> Evaluate marketing automation platforms and begin segment-specific content audit and strategy development.</li><li class="mb-2"><strong>Q1 2026:</strong> Finalize and launch a distributor enablement program with segment-specific materials.</li></ul>' }
+            ];
+
+            const questionsData = [
+                { title: 'Strategy & Resourcing', content: '<ul><li class="mb-2">The model shows a sales utilization of 245%. Is this sustainable? Does this model account for the potentially longer, more complex sales cycles of the industrial Truck Turntable segments?</li><li class="mb-2">How were the annual sales targets determined? Are they broken down by the new product segments? What is the expected revenue contribution from Car vs. Truck turntables?</li><li class="mb-2">What is the budget allocated to marketing to generate qualified leads across these very different segments? Marketing to homeowners is very different and potentially more expensive than B2B marketing to mining companies.</li></ul>' },
+                { title: 'Tactical & Operational', content: '<ul><li class="mb-2">How do we adapt this B2B flow for our distributor channels vs. our direct sales team, especially now considering the product mix they might carry?</li><li class="mb-2">The plan requires 7 touchpoints per buyer. How will we ensure our messaging is relevant to the specific segment (e.g., construction vs. tunneling) at each touchpoint?</li><li class="mb-2">What CRM capabilities do we need to effectively track leads and opportunities across these distinct segments and their unique sales processes?</li></ul>' },
+                { title: 'Market & Product Focus', content: '<ul><li class="mb-2">With this new detailed segmentation, how will we prioritize marketing/sales focus and allocate budget between Car and Truck turntables, and their respective sub-markets?</li><li class="mb-2">How will our core "Australian-engineered" messaging be adapted for a residential buyer versus a commercial or industrial buyer in international markets?</li><li class="mb-2">What are the specific competitive landscapes within each of these sub-segments? Our competitor for residential turntables is likely not the same as for mining turntables.</li></ul>' }
+            ];
+
+            function createAccordion(containerId, data) {
+                const container = document.getElementById(containerId);
+                data.forEach(item => {
+                    const accordionItem = document.createElement('div');
+                    accordionItem.className = 'accordion-item bg-white border border-gray-200 rounded-lg overflow-hidden';
+                    accordionItem.innerHTML = `<button class="accordion-header w-full text-left p-5 flex justify-between items-center font-semibold text-lg hover:bg-gray-50 focus:outline-none"><span>${item.title}</span><span class="accordion-arrow transform transition-transform text-[#A8763E]">&#9660;</span></button><div class="accordion-content px-5 pb-5 text-gray-700">${item.content}</div>`;
+                    container.appendChild(accordionItem);
+                });
+            }
+
+            createAccordion('analysis-accordion', analysisData);
+            createAccordion('questions-accordion', questionsData);
+
+            document.querySelectorAll('.accordion-header').forEach(button => {
+                button.addEventListener('click', () => button.parentElement.classList.toggle('open'));
+            });
+
+            // AI Assistant Gemini API Call
+            const generateButton = document.getElementById('generate-button');
+            const aiTask = document.getElementById('ai-task');
+            const aiContext = document.getElementById('ai-context');
+            const aiOutput = document.getElementById('ai-output');
+            const aiLoader = document.getElementById('ai-loader');
+
+            const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
+
+            const prompts = {
+                slogans: { system: "You are a creative marketing director for an engineering company. Generate 5 short, catchy marketing slogans. Focus on the core benefits mentioned in the user's context.", user: (context) => `Generate slogans for: ${context}` },
+                pains: { system: "You are a market research analyst specializing in industrial and residential solutions. Based on the user's context, brainstorm a list of 5 specific, tangible pain points that a potential buyer would experience.", user: (context) => `Brainstorm buyer pain points for: ${context}` },
+                email: { system: "You are a senior sales development representative. Write a concise, professional, and compelling cold outreach email. The email should introduce the company (Australian Turntables), reference the buyer's potential problem, propose the solution, and end with a clear call to action (a brief meeting).", user: (context) => `Draft a cold outreach email for a prospect dealing with: ${context}` },
+                risks: { system: "You are a business strategist and risk management consultant. Based on the user's context, identify 5 potential business or market risks that the company might face when trying to sell this solution.", user: (context) => `Identify potential business risks related to selling: ${context}` }
+            };
+
+            async function callGeminiAPI(task, context) {
+                const promptConfig = prompts[task];
+                if (!promptConfig) return "Invalid task selected.";
+
+                const payload = {
+                    contents: [{ parts: [{ text: promptConfig.user(context) }] }],
+                    systemInstruction: { parts: [{ text: promptConfig.system }] },
+                };
+                
+                try {
+                    const response = await fetch(API_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                    const result = await response.json();
+                    const candidate = result.candidates?.[0];
+                    return candidate?.content?.parts?.[0]?.text || "Could not generate a response. The model may have returned empty content.";
+                } catch (error) {
+                    console.error("Gemini API call failed:", error);
+                    return `Error: Could not retrieve data from the AI. Please check the console for details.`;
                 }
             }
-        }
-    });
 
-    const blogTableBody = document.querySelector("#blogTable tbody");
-    const blogData = allData.popularBlogs[monthIndex];
-    blogTableBody.innerHTML = blogData.map(row => `
-        <tr>
-            <td class="text-sm">${row.page}</td>
-            <td>${row.users}</td>
-            <td>${row.rate.toFixed(2)}</td>
-            <td>${row.time}</td>
-        </tr>
-    `).join('');
-}
+            generateButton.addEventListener('click', async () => {
+                const task = aiTask.value;
+                const context = aiContext.value;
 
-function renderSeoTab(monthIndex) {
-    const content = document.getElementById('dashboardContent');
-    destroyCharts();
+                if (!context.trim()) {
+                    aiOutput.textContent = "Please provide some context for the AI to work with.";
+                    return;
+                }
 
-    const currentSeo = allData.keywordRankingAustralia[monthIndex];
-    const prevSeo = monthIndex > 0 ? allData.keywordRankingAustralia[monthIndex - 1] : currentSeo;
-    const positionChange = (prevSeo.avgPosition - currentSeo.avgPosition).toFixed(1);
-    const isPositiveChange = positionChange >= 0;
+                aiLoader.classList.remove('hidden');
+                aiOutput.classList.add('hidden');
+                generateButton.disabled = true;
 
-    content.innerHTML = `
-        <div id="seo" class="tab-content">
-             <div class="mb-8">
-                <h2 class="text-2xl font-bold text-gray-700 mb-4">SEO & Keyword Performance for ${months[monthIndex]} 2025 (Australia)</h2>
-                <p class="text-gray-600">This section focuses on your organic search visibility in Australia. Track your average keyword ranking position over time and review the performance of your top keywords for the selected month to understand your standing in search engine results.</p>
-            </div>
-             <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                 <h3 class="text-xl font-semibold mb-4">Average Keyword Position Trend (Australia)</h3>
-                <div class="chart-container"><canvas id="seoPositionChart"></canvas></div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-semibold mb-4">Monthly SEO Snapshot</h3>
-                     <div class="text-center">
-                        <h4 class="text-lg font-semibold text-gray-500">Average Position</h4>
-                        <p class="text-5xl font-bold my-3">${currentSeo.avgPosition}</p>
-                        <div class="flex justify-center items-center text-lg">
-                            <span class="${isPositiveChange ? 'text-green-500' : 'text-red-500'} mr-2 font-semibold">${isPositiveChange ? '↑' : '↓'} ${Math.abs(positionChange)}</span>
-                            <span class="text-gray-500">vs last month</span>
-                        </div>
-                        <p class="text-sm text-gray-400 mt-2">(Lower is better)</p>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-semibold mb-4">Top Performing Queries</h3>
-                    <div class="overflow-x-auto">
-                        <table id="topQueriesTable">
-                            <thead><tr><th>Keyword</th><th>Position</th></tr></thead>
-                            <tbody>
-                            ${currentSeo.topQueries.map(q => `<tr><td>${q.q}</td><td>${q.pos}</td></tr>`).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+                const result = await callGeminiAPI(task, context);
+                
+                aiOutput.textContent = result;
+                
+                aiLoader.classList.add('hidden');
+                aiOutput.classList.remove('hidden');
+                generateButton.disabled = false;
+            });
 
-    const seoPositionCtx = document.getElementById('seoPositionChart').getContext('2d');
-    charts.seoPositionChart = new Chart(seoPositionCtx, {
-        type: 'line',
-        data: {
-            labels: months.slice(0, monthIndex + 1),
-            datasets: [{
-                label: 'Average Position',
-                data: allData.keywordRankingAustralia.map(d => d.avgPosition).slice(0, monthIndex + 1),
-                borderColor: '#c5a07e',
-                backgroundColor: 'rgba(197, 160, 126, 0.1)',
-                tension: 0.1,
-                fill: true
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            responsive: true,
-            scales: { y: { reverse: true, title: { display: true, text: 'Position (Lower is Better)' } } }
-        }
-    });
-}
-
-function renderAdsTab(monthIndex) {
-    const content = document.getElementById('dashboardContent');
-    destroyCharts();
-
-    const currentAds = allData.adsOverview[monthIndex];
-    const totalConversions = allData.adConversions.data[monthIndex].reduce((a, b) => a + b, 0);
-
-    content.innerHTML = `
-        <div id="ads" class="tab-content">
-            <div class="mb-8">
-                <h2 class="text-2xl font-bold text-gray-700 mb-4">Paid Ads & Conversions for ${months[monthIndex]} 2025</h2>
-                <p class="text-gray-600">Analyze the performance and efficiency of your paid advertising campaigns. This view provides an overview of key ad metrics, the cost per click trend, and a detailed breakdown of conversions generated by different forms on your website.</p>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-center">
-                <div class="bg-white p-4 rounded-lg shadow-md">
-                    <h4 class="font-semibold text-gray-500">Total Clicks</h4>
-                    <p class="text-3xl font-bold">${currentAds.clicks.toLocaleString()}</p>
-                </div>
-                 <div class="bg-white p-4 rounded-lg shadow-md">
-                    <h4 class="font-semibold text-gray-500">Impressions</h4>
-                    <p class="text-3xl font-bold">${currentAds.impr.toLocaleString()}</p>
-                </div>
-                 <div class="bg-white p-4 rounded-lg shadow-md">
-                    <h4 class="font-semibold text-gray-500">Total Cost</h4>
-                    <p class="text-3xl font-bold">$${currentAds.cost.toLocaleString()}</p>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow-md">
-                    <h4 class="font-semibold text-gray-500">Total Conversions</h4>
-                    <p class="text-3xl font-bold">${totalConversions}</p>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-semibold mb-4">Conversions by Form Type</h3>
-                    <div class="chart-container"><canvas id="adConversionsChart"></canvas></div>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-semibold mb-4">Ad Spend vs. Avg. CPC Trend</h3>
-                    <div class="chart-container"><canvas id="adSpendChart"></canvas></div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    const adConversionsCtx = document.getElementById('adConversionsChart').getContext('2d');
-    charts.adConversionsChart = new Chart(adConversionsCtx, {
-        type: 'bar',
-        data: {
-            labels: allData.adConversions.labels,
-            datasets: [{
-                label: 'Conversions',
-                data: allData.adConversions.data[monthIndex],
-                backgroundColor: '#c5a07e',
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            responsive: true,
-            indexAxis: 'y'
-        }
-    });
-
-    const adSpendCtx = document.getElementById('adSpendChart').getContext('2d');
-    charts.adSpendChart = new Chart(adSpendCtx, {
-        type: 'bar',
-        data: {
-            labels: months.slice(0, monthIndex + 1),
-            datasets: [{
-                label: 'Total Cost (AUD)',
-                data: allData.adsOverview.map(d => d.cost).slice(0, monthIndex + 1),
-                backgroundColor: '#a0aec0',
-                yAxisID: 'y',
-            }, {
-                label: 'Avg. CPC (AUD)',
-                data: allData.adsOverview.map(d => d.cpc).slice(0, monthIndex + 1),
-                backgroundColor: '#c5a07e',
-                type: 'line',
-                yAxisID: 'y1',
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            responsive: true,
-            scales: {
-                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Total Cost (AUD)' } },
-                y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Avg. CPC (AUD)' }, grid: { drawOnChartArea: false } }
-            }
-        }
-    });
-}
-
-
-function setupNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            const tab = link.dataset.tab;
-            const monthIndex = parseInt(monthSelector.value);
-            renderTab(tab, monthIndex);
         });
-    });
-}
+    </script>
 
-function renderTab(tab, monthIndex) {
-    switch (tab) {
-        case 'summary': renderSummaryTab(monthIndex); break;
-        case 'web': renderWebTab(monthIndex); break;
-        case 'seo': renderSeoTab(monthIndex); break;
-        case 'ads': renderAdsTab(monthIndex); break;
-        default: renderSummaryTab(monthIndex);
-    }
-}
-
-monthSelector.addEventListener('change', (e) => {
-    const monthIndex = parseInt(e.target.value);
-    const activeTab = document.querySelector('.nav-link.active').dataset.tab;
-    renderTab(activeTab, monthIndex);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Set selector to the latest available month (August)
-    monthSelector.value = "7";
-    renderSummaryTab(7);
-    setupNavigation();
-});
-
-</script>
 </body>
 </html>
+
